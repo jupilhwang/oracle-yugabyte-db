@@ -1,0 +1,26 @@
+version: '3'
+services:
+  yugabyte:
+    container_name: yugabyte
+    image: yugabytedb/yugabyte:latest
+    command: [ "/home/yugabyte/bin/yugabyted", 
+        "start",
+        "--daemon=false"
+        ]
+    ports:
+      - 7000:7000
+      - 9000:9000
+      - 5433:5433
+      - 6379:6379
+      - 9042:9042
+    networks:
+      - yugabyte
+    volumes:
+      - yugabyte-data:/mnt/master
+    restart: always
+
+volumes:
+  yugabyte-data:
+
+networks:
+  yugabyte:

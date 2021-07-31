@@ -1,0 +1,55 @@
+version: '3'
+services:
+  yb-master:
+    container_name: yb-master
+    image: yugabytedb/yugabyte:latest
+    command: [ "/home/yugabyte/bin/yb-master", 
+        "--fs_data_dirs=/mnt/master", 
+        "--master_addresses=yb-master:7100", 
+        "--rpc_bind_addresses=yb-master:7100", 
+        "--replication_factor=1" ]
+    environment:
+      SERVICE_7000_NAME: yb-master
+    ports:
+      - 7000:7000
+    networks:
+      - yugabytes
+    hostname: yb-master
+    volumes:
+      - yb-master-data:/mnt/master
+    restart: always
+
+  yb-tserver-01:
+    container_name: yb-tserver-01
+    image: yugabytedb/yugabyte:latest
+    command: [ "/home/yugabyte/bin/yb-tserver", 
+        "--fs_data_dirs=/mnt/tserver", 
+        "--start_pgsql_proxy",
+        "--rpc_bind_addresses=yb-tserver-01:9100", 
+        "--tserver_master_addrs=yb-master:7100" ]
+    environment:
+      SERVICE_5433_NAME: ysql
+      SERVICE_6379_NAME: yedis
+      SERVICE_9000_NAME: yb-tserver-01
+      SERVICE_9042_NAME: ycql
+    ports:
+      - 5433:5433
+      - 6379:6379
+      - 9000:9000
+      - 9042:9042
+    networks:
+      - yugabytes
+    hostname: yb-tserver-01
+    volumes:
+      - yb-tserver-data-01:/mnt/tserver
+    depends_on:
+      - yb-master
+    restart: always
+
+volumes:
+  yb-master-data:
+  yb-tserver-data-01:
+
+networks:
+  yugabytes:
+
